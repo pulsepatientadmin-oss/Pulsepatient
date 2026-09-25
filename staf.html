@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PulsePatient - Hospital & Staff Portal (Firebase)</title>
+    
+    <!-- Firebase SDKs (CDN) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, setDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDInAGlPnHpf6DNWEqDtpsrV3puv8y282Y",
+            authDomain: "pulsepatient.firebaseapp.com",
+            projectId: "pulsepatient",
+            storageBucket: "pulsepatient.firebasestorage.app",
+            messagingSenderId: "1037055506922",
+            appId: "1:1037055506922:web:57d6f2fe682bc9034a1a93"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.db = db;
+        window.collection = collection;
+        window.getDocs = getDocs;
+        window.setDoc = setDoc;
+        window.doc = doc;
+        window.getDoc = getDoc;
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const demoDocRef = doc(db, "hospitals", "demo_hospital");
+                const demoSnap = await getDoc(demoDocRef);
+                if (!demoSnap.exists()) {
+                    await setDoc(demoDocRef, {
+                        name: "Demo Hospital",
+                        address: "Main Road, Dibrugarh, Assam",
+                        support: "+91 98765-43210",
+                        username: "demo",
+                        password: "123"
+                    });
+                }
+            } catch (err) {
+                console.error("Firebase init error:", err);
+            }
+            setDefaultQueueDate();
+        });
+    </script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f7f6; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .container { width: 100%; max-width: 500px; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08); position: relative; }
+        h2 { color: #0077b6; margin-bottom: 5px; text-align: center; }
+        .subtitle { color: #6c757d; font-size: 0.9rem; margin-bottom: 20px; text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; color: #495057; font-size: 0.9rem; }
+        input, textarea { width: 100%; padding: 11px 14px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 1rem; outline: none; background-color: #fff; }
+        textarea { resize: vertical; height: 70px; }
+        .primary-btn { background-color: #0077b6; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; width: 100%; transition: background-color 0.2s; margin-top: 5px; }
+        .primary-btn:hover { background-color: #023e8a; }
+        .menu-btn { background-color: #f8f9fa; color: #0077b6; border: 2px solid #0077b6; padding: 14px; border-radius: 8px; cursor: pointer; font-size: 1.05rem; font-weight: 600; width: 100%; margin-bottom: 12px; text-align: left; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; }
+        .menu-btn:hover { background-color: #e0f2fe; }
+        .back-btn { background-color: #6c757d; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; margin-bottom: 15px; font-weight: 600; }
+        .upload-btn { background-color: #10b981; }
+        .upload-btn:hover { background-color: #059669; }
+        .logout-btn { background-color: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .success-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px; border-radius: 8px; margin-top: 15px; color: #047857; text-align: center; display: none; font-size: 0.95rem; }
+        .error-box { background: #fef2f2; border: 1px solid #fca5a5; padding: 12px; border-radius: 8px; margin-top: 15px; color: #991b1b; text-align: center; display: none; font-size: 0.95rem; }
+        .divider { margin: 20px 0; border-bottom: 1px solid #e9ecef; position: relative; text-align: center; }
+        .divider span { background: #fff; padding: 0 10px; color: #6c757d; font-size: 0.85rem; position: relative; top: -10px; }
+        .token-box { background: #f0fdf4; border: 2px dashed #34d399; padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: center; }
+        .current-token { font-size: 2.2rem; font-weight: bold; color: #059669; margin-top: 5px; }
+        .patient-details-card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 15px; margin-bottom: 15px; text-align: left; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem; }
+        .info-label { color: #6c757d; font-weight: 500; }
+        .info-value { color: #212529; font-weight: 600; }
+        .next-btn { background-color: #2563eb; color: white; border: none; padding: 13px; border-radius: 8px; cursor: pointer; font-size: 1.1rem; font-weight: 600; width: 100%; transition: background-color 0.2s; }
+        .next-btn:hover { background-color: #1d4ed8; }
+        .section-card { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e9ecef; }
+        .action-btn-group { display: flex; gap: 8px; margin-top: 10px; }
+        .view-btn { flex: 1; text-align: center; background-color: #0284c7; color: white; text-decoration: none; padding: 9px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; }
+        .download-btn { flex: 1; text-align: center; background-color: #10b981; color: white; text-decoration: none; padding: 9px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; }
+        .delete-btn { flex: 1; text-align: center; background-color: #ef4444; color: white; border: none; padding: 9px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; cursor: pointer; }
+        .report-item { background: #fff; border: 1px solid #cbd5e0; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header-top">
+            <div style="width: 30px;"></div>
+            <h2 id="portalTitle">🏥 PulsePatient</h2>
+            <div id="logoutContainer" style="display: none;">
+                <button class="logout-btn" onclick="hospitalLogout()">Logout</button>
+            </div>
+        </div>
+        <p class="subtitle" id="portalSubtitle">Hospital & Staff Portal (Cloud)</p>
+
+        <!-- Step 1: Login Section -->
+        <div id="mainMenuSection">
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e9ecef;">
+                <h3 style="color: #0077b6; font-size: 1.05rem; margin-bottom: 12px; text-align: center;">Hospital Login</h3>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="loginUser" placeholder="Enter username">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPass" placeholder="Enter password">
+                </div>
+                <button class="primary-btn" onclick="hospitalLogin()">Login Now</button>
+                <div id="loginError" class="error-box">Invalid Username or Password!</div>
+            </div>
+
+            <div class="divider"><span>OR</span></div>
+
+            <button class="menu-btn" onclick="showSection('registerSection')">
+                <span>🏥 Register Your Hospital</span> <span>➡️</span>
+            </button>
+        </div>
+
+        <!-- Section A: Register Hospital -->
+        <div id="registerSection" style="display: none;">
+            <button class="back-btn" onclick="showMainDashboard()">⬅️ Back to Login</button>
+            <h3 style="color: #0077b6; font-size: 1.1rem; margin-bottom: 12px; text-align: center;">Register New Hospital</h3>
+            <div class="form-group">
+                <label>Hospital Name</label>
+                <input type="text" id="regHospName" placeholder="Enter hospital name">
+            </div>
+            <div class="form-group">
+                <label>Hospital Address</label>
+                <textarea id="regHospAddress" placeholder="Enter full address"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Support Number</label>
+                <input type="tel" id="regHospSupport" placeholder="Enter support number">
+            </div>
+            <div class="form-group">
+                <label>Create Username</label>
+                <input type="text" id="regUsername" placeholder="Set login username">
+            </div>
+            <div class="form-group">
+                <label>Create Password</label>
+                <input type="password" id="regPassword" placeholder="Set login password">
+            </div>
+            <button class="primary-btn" style="background-color: #10b981;" onclick="registerHospital()">Register Hospital</button>
+            <div id="regSuccess" class="success-box">Hospital Registered Successfully in Cloud!</div>
+            <div id="regError" class="error-box">All fields are required or username already exists!</div>
+        </div>
+
+        <!-- Section B: Doctor Queue Section -->
+        <div id="doctorSection" style="display: none;">
+            <button class="back-btn" onclick="showMainDashboard()">⬅️ Back to Dashboard</button>
+            <div class="section-card">
+                <h3 style="color: #0077b6; font-size: 1.05rem; margin-bottom: 10px; text-align: center;">Doctor Queue Panel</h3>
+                
+                <div class="form-group">
+                    <label>Select Queue Date</label>
+                    <input type="date" id="queueDateSelect" onchange="loadCurrentPatient()">
+                </div>
+
+                <div class="token-box">
+                    <p style="font-size: 0.95rem; color: #374151; font-weight: 600;">Currently Serving Token</p>
+                    <div class="current-token" id="runningToken">#1</div>
+                </div>
+
+                <div class="patient-details-card" id="patientCard">
+                    <h4 style="color: #0077b6; font-size: 0.95rem; margin-bottom: 8px; border-bottom: 1px solid #dee2e6; padding-bottom: 4px;">Patient Information</h4>
+                    <div class="info-row">
+                        <span class="info-label">Full Name:</span>
+                        <span class="info-value" id="docName">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Age:</span>
+                        <span class="info-value" id="docAge">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Mobile Number:</span>
+                        <span class="info-value" id="docMobile">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Booking Date:</span>
+                        <span class="info-value" id="docDate">-</span>
+                    </div>
+                </div>
+
+                <button class="next-btn" onclick="nextPatient()">Next Patient ➡️</button>
+            </div>
+        </div>
+
+        <!-- Section C: Staff Report Management Section -->
+        <div id="staffSection" style="display: none;">
+            <button class="back-btn" onclick="showMainDashboard()">⬅️ Back to Dashboard</button>
+            <div class="section-card">
+                <h3 style="color: #0077b6; font-size: 1.05rem; margin-bottom: 10px; text-align: center;">Staff Report Management</h3>
+                
+                <div class="form-group">
+                    <label>Hospital Name</label>
+                    <input type="text" id="staffHospital" readonly style="background-color: #e9ecef; font-weight: bold;">
+                </div>
+
+                <div class="form-group">
+                    <label>Patient Report ID</label>
+                    <input type="text" id="staffReportId" placeholder="Enter Report ID (e.g. REP-1234)">
+                </div>
+
+                <div class="form-group">
+                    <label>Patient Full Name</label>
+                    <input type="text" id="staffName" placeholder="Enter patient full name">
+                </div>
+
+                <div class="form-group">
+                    <label>Date of Birth</label>
+                    <input type="date" id="staffDob">
+                </div>
+
+                <div class="form-group">
+                    <label>Select PDF File (Upload or Replace)</label>
+                    <input type="file" id="staffFile" accept="application/pdf">
+                </div>
+
+                <div class="form-group">
+                    <label style="color: #6c757d; font-size: 0.85rem; text-align: center;">--- OR Paste External Link ---</label>
+                    <input type="text" id="staffReportUrl" placeholder="https://example.com/report.pdf">
+                </div>
+
+                <button class="primary-btn upload-btn" onclick="uploadReport()">Upload / Replace Report</button>
+                <div id="staffSuccess" class="success-box">Report successfully saved to Firebase!</div>
+                <div id="staffError" class="error-box">Details match nahi hui! Report ID check karein.</div>
+
+                <!-- Section to Search & Manage Uploaded Reports -->
+                <div style="margin-top: 20px; border-top: 1px solid #cbd5e0; padding-top: 15px;">
+                    <h4 style="color: #0077b6; font-size: 0.95rem; margin-bottom: 10px; text-align: center;">Search & Manage Uploaded Reports</h4>
+                    <div class="form-group">
+                        <label>Search by Patient Name or Report ID</label>
+                        <input type="text" id="searchReportInput" placeholder="Type name or ID to search..." onkeyup="searchUploadedReports()">
+                    </div>
+                    <div id="searchReportsList" style="max-height: 250px; overflow-y: auto; margin-top: 10px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Logged-in Dashboard -->
+        <div id="hospitalDashboard" style="display: none;">
+            <p id="welcomeHospitalMsg" style="color: #059669; font-weight: bold; margin-bottom: 20px; text-align: center; font-size: 1.1rem;"></p>
+            
+            <button class="menu-btn" onclick="showSection('doctorSection'); setDefaultQueueDate();">
+                <span>👨‍⚕️ Doctor Queue Section</span> <span>➡️</span>
+            </button>
+            <button class="menu-btn" onclick="showSection('staffSection'); loadAllUploadedReports();">
+                <span>📋 Staff Report Upload & Search Section</span> <span>➡️</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let loggedInHospitalName = "";
+        let queueIndices = {};
+
+        function setDefaultQueueDate() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById('queueDateSelect');
+            if (dateInput && !dateInput.value) {
+                dateInput.value = todayStr;
+            }
+            loadCurrentPatient();
+        }
+
+        function showSection(sectionId) {
+            document.getElementById('mainMenuSection').style.display = 'none';
+            document.getElementById('registerSection').style.display = 'none';
+            document.getElementById('doctorSection').style.display = 'none';
+            document.getElementById('staffSection').style.display = 'none';
+            document.getElementById('hospitalDashboard').style.display = 'none';
+
+            document.getElementById(sectionId).style.display = 'block';
+        }
+
+        function showMainDashboard() {
+            if (loggedInHospitalName !== "") {
+                document.getElementById('hospitalDashboard').style.display = 'block';
+            } else {
+                document.getElementById('mainMenuSection').style.display = 'block';
+            }
+            document.getElementById('registerSection').style.display = 'none';
+            document.getElementById('doctorSection').style.display = 'none';
+            document.getElementById('staffSection').style.display = 'none';
+        }
+
+        async function registerHospital() {
+            const name = document.getElementById('regHospName').value.trim();
+            const address = document.getElementById('regHospAddress').value.trim();
+            const support = document.getElementById('regHospSupport').value.trim();
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+
+            const successBox = document.getElementById('regSuccess');
+            const errorBox = document.getElementById('regError');
+
+            successBox.style.display = 'none';
+            errorBox.style.display = 'none';
+
+            if (!name || !address || !support || !username || !password) {
+                errorBox.style.display = 'block';
+                return;
+            }
+
+            try {
+                const hospitalsSnap = await window.getDocs(window.collection(window.db, "hospitals"));
+                let exists = false;
+                hospitalsSnap.forEach(docSnap => {
+                    if (docSnap.data().username === username) exists = true;
+                });
+
+                if (exists) {
+                    errorBox.innerText = "Username already taken! Choose another.";
+                    errorBox.style.display = 'block';
+                    return;
+                }
+
+                const hospId = name.toLowerCase().replace(/\s+/g, '_');
+                await window.setDoc(window.doc(window.db, "hospitals", hospId), {
+                    name, address, support, username, password
+                });
+
+                successBox.style.display = 'block';
+                document.getElementById('regHospName').value = '';
+                document.getElementById('regHospAddress').value = '';
+                document.getElementById('regHospSupport').value = '';
+                document.getElementById('regUsername').value = '';
+                document.getElementById('regPassword').value = '';
+            } catch (err) {
+                console.error(err);
+                alert("Registration failed! Firebase connection check karein.");
+            }
+        }
+
+        async function hospitalLogin() {
+            const user = document.getElementById('loginUser').value.trim();
+            const pass = document.getElementById('loginPass').value.trim();
+            const loginError = document.getElementById('loginError');
+
+            loginError.style.display = 'none';
+
+            try {
+                const hospitalsSnap = await window.getDocs(window.collection(window.db, "hospitals"));
+                let matchedHospital = null;
+                hospitalsSnap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if (data.username === user && data.password === pass) {
+                        matchedHospital = data;
+                    }
+                });
+
+                                if (matchedHospital) {
+                    loggedInHospitalName = matchedHospital.name;
+                    document.getElementById('mainMenuSection').style.display = 'none';
+                    document.getElementById('hospitalDashboard').style.display = 'block';
+                    document.getElementById('logoutContainer').style.display = 'block';
+                    document.getElementById('welcomeHospitalMsg').innerText = `Logged in Hospital: ${matchedHospital.name}`;
+                    document.getElementById('portalTitle').innerText = matchedHospital.name;
+                    document.getElementById('portalSubtitle').innerText = "Cloud Management Dashboard";
+                    document.getElementById('staffHospital').value = matchedHospital.name;
+                    setDefaultQueueDate();
+                    loadAllUploadedReports();
+                } else {
+                    loginError.style.display = 'block';
+                }
+            } catch (err) {
+                console.error(err);
+                loginError.innerText = "Login error! Firebase connection issue.";
+                loginError.style.display = 'block';
+            }
+        }
+
+        function hospitalLogout() {
+            loggedInHospitalName = "";
+            document.getElementById('loginUser').value = '';
+            document.getElementById('loginPass').value = '';
+            document.getElementById('hospitalDashboard').style.display = 'none';
+            document.getElementById('logoutContainer').style.display = 'none';
+            document.getElementById('mainMenuSection').style.display = 'block';
+            document.getElementById('portalTitle').innerText = "🏥 PulsePatient";
+            document.getElementById('portalSubtitle').innerText = "Hospital & Staff Portal";
+            showMainDashboard();
+        }
+
+        async function loadCurrentPatient() {
+            const selectedDate = document.getElementById('queueDateSelect').value;
+            if (!selectedDate) return;
+
+            try {
+                const docRef = window.doc(window.db, "patients_queue", selectedDate);
+                const docSnap = await window.getDoc(docRef);
+                const allTokens = docSnap.exists() ? (docSnap.data().tokens || []) : [];
+                
+                const targetHosp = loggedInHospitalName || "Demo Hospital";
+                const dateTokens = allTokens.filter(p => p.hospital.toLowerCase() === targetHosp.toLowerCase());
+
+                if (queueIndices[selectedDate] === undefined) {
+                    queueIndices[selectedDate] = 0;
+                }
+                let currentIndex = queueIndices[selectedDate];
+
+                if (dateTokens.length > 0 && currentIndex < dateTokens.length) {
+                    const patient = dateTokens[currentIndex];
+                    document.getElementById('runningToken').innerText = `#${patient.tokenNumber}`;
+                    document.getElementById('docName').innerText = patient.name;
+                    document.getElementById('docAge').innerText = patient.age;
+                    document.getElementById('docMobile').innerText = patient.mobile;
+                    document.getElementById('docDate').innerText = patient.bookingDate;
+                } else if (dateTokens.length > 0) {
+                    document.getElementById('runningToken').innerText = "Finished";
+                    document.getElementById('docName').innerText = "All patients checked for this date.";
+                    document.getElementById('docAge').innerText = "-";
+                    document.getElementById('docMobile').innerText = "-";
+                    document.getElementById('docDate').innerText = "-";
+                } else {
+                    document.getElementById('runningToken').innerText = "#0";
+                    document.getElementById('docName').innerText = "No patients in queue for this date.";
+                    document.getElementById('docAge').innerText = "-";
+                    document.getElementById('docMobile').innerText = "-";
+                    document.getElementById('docDate').innerText = "-";
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function nextPatient() {
+            const selectedDate = document.getElementById('queueDateSelect').value;
+            if (!selectedDate) return;
+            if (queueIndices[selectedDate] === undefined) {
+                queueIndices[selectedDate] = 0;
+            }
+            queueIndices[selectedDate]++;
+            loadCurrentPatient();
+        }
+
+        async function uploadReport() {
+            const hospital = document.getElementById('staffHospital').value.trim();
+            const reportId = document.getElementById('staffReportId').value.trim().toUpperCase();
+            const inputName = document.getElementById('staffName').value.trim().toLowerCase();
+            const inputDob = document.getElementById('staffDob').value;
+            const fileInput = document.getElementById('staffFile');
+            const urlInput = document.getElementById('staffReportUrl').value.trim();
+
+            const successBox = document.getElementById('staffSuccess');
+            const errorBox = document.getElementById('staffError');
+
+            successBox.style.display = 'none';
+            errorBox.style.display = 'none';
+
+            if (!hospital || !reportId || !inputName || !inputDob) {
+                alert("Kripya Report ID, Patient Name, aur Date of Birth sabhi fields fill karein.");
+                return;
+            }
+
+            try {
+                const querySnap = await window.getDocs(window.collection(window.db, "patients_queue"));
+                let foundDocId = null;
+                let foundPatient = null;
+                let tokensList = [];
+
+                querySnap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if (data.tokens) {
+                        data.tokens.forEach(p => {
+                            if (p.reportId === reportId && p.hospital.toLowerCase() === hospital.toLowerCase()) {
+                                foundDocId = docSnap.id;
+                                foundPatient = p;
+                                tokensList = data.tokens;
+                            }
+                        });
+                    }
+                });
+
+                if (!foundPatient) {
+                    errorBox.style.display = 'block';
+                    return;
+                }
+
+                if (!foundPatient.dob || foundPatient.dob === "") {
+                    foundPatient.dob = inputDob;
+                }
+
+                if (foundPatient.name.trim().toLowerCase() !== inputName || foundPatient.dob !== inputDob) {
+                    errorBox.style.display = 'block';
+                    return;
+                }
+
+                const processUpdate = async (reportUrl) => {
+                    foundPatient.reportUrl = reportUrl;
+                    await window.setDoc(window.doc(window.db, "patients_queue", foundDocId), { tokens: tokensList });
+                    successBox.style.display = 'block';
+                    clearReportForm();
+                    loadAllUploadedReports();
+                };
+
+                if (fileInput.files && fileInput.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = async function(e) {
+                        await processUpdate(e.target.result);
+                    };
+                    reader.readAsDataURL(fileInput.files[0]);
+                } else if (urlInput !== "") {
+                    await processUpdate(urlInput);
+                } else {
+                    alert("Kripya ya toh PDF file select karein ya phir link paste karein.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Upload failed! Firebase connection check karein.");
+            }
+        }
+
+        async function loadAllUploadedReports() {
+            renderReportsList("");
+        }
+
+        function searchUploadedReports() {
+            const query = document.getElementById('searchReportInput').value.trim().toLowerCase();
+            renderReportsList(query);
+        }
+
+        async function renderReportsList(filterQuery) {
+            const targetHosp = loggedInHospitalName || "Demo Hospital";
+            const listContainer = document.getElementById('searchReportsList');
+            listContainer.innerHTML = "Loading from cloud...";
+
+            try {
+                const querySnap = await window.getDocs(window.collection(window.db, "patients_queue"));
+                listContainer.innerHTML = "";
+
+                let htmlContent = "";
+                let foundAny = false;
+
+                querySnap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const dateKey = docSnap.id;
+                    if (data.tokens) {
+                        data.tokens.forEach(p => {
+                            if (p.hospital.toLowerCase() === targetHosp.toLowerCase() && p.reportUrl && p.reportUrl.trim() !== "") {
+                                let matchesQuery = p.name.toLowerCase().includes(filterQuery) || p.reportId.toLowerCase().includes(filterQuery);
+                                if (!filterQuery || matchesQuery) {
+                                    foundAny = true;
+                                    htmlContent += `
+                                        <div class="report-item">
+                                            <p><b>Name:</b> ${p.name} | <b>ID:</b> ${p.reportId}</p>
+                                            <p style="font-size: 0.85rem; color: #666;">DOB: ${p.dob || 'N/A'} | Date: ${p.bookingDate}</p>
+                                            <div class="action-btn-group">
+                                                <a href="${p.reportUrl}" target="_blank" class="view-btn">👁️ View</a>
+                                                <a href="${p.reportUrl}" download class="download-btn">📥 Save</a>
+                                                <button class="delete-btn" onclick="deleteReport('${dateKey}', '${p.reportId}')">🗑️ Delete</button>
+                                            </div>
+                                        </div>`;
+                                }
+                            }
+                        });
+                    }
+                });
+
+                if (!foundAny) {
+                    listContainer.innerHTML = `<p style="text-align: center; color: #666; font-size: 0.9rem;">Koi uploaded report nahi mili.</p>`;
+                } else {
+                    listContainer.innerHTML = htmlContent;
+                }
+            } catch (err) {
+                console.error(err);
+                listContainer.innerHTML = `<p style="text-align: center; color: red;">Error loading reports.</p>`;
+            }
+        }
+
+        async function deleteReport(dateKey, reportId) {
+            if (confirm("Kya aap sach mein is report ko delete karna chahte hain?")) {
+                try {
+                    const docRef = window.doc(window.db, "patients_queue", dateKey);
+                    const docSnap = await window.getDoc(docRef);
+                    if (docSnap.exists()) {
+                        let tokens = docSnap.data().tokens || [];
+                        tokens.forEach(p => {
+                            if (p.reportId === reportId) {
+                                p.reportUrl = "";
+                            }
+                        });
+                        await window.setDoc(docRef, { tokens });
+                        loadAllUploadedReports();
+                        alert("Report successfully delete ho gayi hai!");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("Delete failed!");
+                }
+            }
+        }
+
+        function clearReportForm() {
+            document.getElementById('staffReportId').value = '';
+            document.getElementById('staffName').value = '';
+            document.getElementById('staffDob').value = '';
+            document.getElementById('staffFile').value = '';
+            document.getElementById('staffReportUrl').value = '';
+        }
+    </script>
+</body>
+</html>
