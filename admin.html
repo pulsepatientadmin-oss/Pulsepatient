@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PulsePatient - Master Admin Panel</title>
+    
+    <!-- Firebase SDKs (CDN) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDInAGlPnHpf6DNWEqDtpsrV3puv8y282Y",
+            authDomain: "pulsepatient.firebaseapp.com",
+            projectId: "pulsepatient",
+            storageBucket: "pulsepatient.firebasestorage.app",
+            messagingSenderId: "1037055506922",
+            appId: "1:1037055506922:web:57d6f2fe682bc9034a1a93"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.db = db;
+        window.collection = collection;
+        window.getDocs = getDocs;
+        window.doc = doc;
+        window.deleteDoc = deleteDoc;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadAllHospitals();
+        });
+    </script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f7f6; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .container { width: 100%; max-width: 600px; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08); }
+        h2 { color: #0077b6; margin-bottom: 5px; text-align: center; }
+        .subtitle { color: #6c757d; font-size: 0.9rem; margin-bottom: 20px; text-align: center; }
+        .hospital-card { background: #f8f9fa; border: 1px solid #cbd5e0; padding: 15px; border-radius: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .hospital-info h4 { color: #0077b6; margin-bottom: 4px; font-size: 1.05rem; }
+        .hospital-info p { font-size: 0.85rem; color: #555; margin-bottom: 2px; }
+        .delete-btn { background-color: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+        .delete-btn:hover { background-color: #dc2626; }
+        .refresh-btn { background-color: #10b981; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; margin-bottom: 15px; }
+        .refresh-btn:hover { background-color: #059669; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>👑 Master Admin Panel</h2>
+        <p class="subtitle">Manage All Registered Hospitals & Credentials</p>
+
+        <button class="refresh-btn" onclick="loadAllHospitals()">🔄 Refresh Hospital List</button>
+
+        <div id="hospitalsListContainer">
+            <p style="text-align: center; color: #666;">Loading hospitals from cloud...</p>
+        </div>
+    </div>
+
+    <script>
+        async function loadAllHospitals() {
+            const container = document.getElementById('hospitalsListContainer');
+            container.innerHTML = "<p style='text-align: center; color: #666;'>Loading...</p>";
+
+            try {
+                const querySnap = await window.getDocs(window.collection(window.db, "hospitals"));
+                container.innerHTML = "";
+
+                let htmlContent = "";
+                let count = 0;
+
+                querySnap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const docId = docSnap.id;
+                    count++;
+
+                    htmlContent += `
+                        <div class="hospital-card">
+                            <div class="hospital-info">
+                                <h4>🏥 ${data.name || 'N/A'}</h4>
+                                <p><b>Address:</b> ${data.address || 'N/A'}</p>
+                                <p><b>Support:</b> ${data.support || 'N/A'}</p>
+                                <p><b>Username:</b> <span style="color: #0284c7; font-weight: bold;">${data.username || 'N/A'}</span> | <b>Password:</b> <span style="color: #d97706; font-weight: bold;">${data.password || 'N/A'}</span></p>
+                            </div>
+                            <button class="delete-btn" onclick="deleteHospital('${docId}')">🗑️ Delete</button>
+                        </div>`;
+                });
+
+                if (count === 0) {
+                    container.innerHTML = `<p style="text-align: center; color: #666;">Koi registered hospital nahi mila.</p>`;
+                } else {
+                    container.innerHTML = htmlContent;
+                }
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = `<p style="text-align: center; color: red;">Error loading hospitals from Firebase.</p>`;
+            }
+        }
+
+        async function deleteHospital(docId) {
+            if (confirm("Kya aap sach mein is hospital ko delete karna chahte hain?")) {
+                try {
+                    await window.deleteDoc(window.doc(window.db, "hospitals", docId));
+                    alert("Hospital successfully delete ho gaya hai!");
+                    loadAllHospitals();
+                } catch (err) {
+                    console.error(err);
+                    alert("Delete failed!");
+                }
+            }
+        }
+    </script>
+</body>
+</html>
