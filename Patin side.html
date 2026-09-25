@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PulsePatient - Patient Portal</title>
+    
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, setDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDInAGlPnHpf6DNWEqDtpsrV3puv8y282Y",
+            authDomain: "pulsepatient.firebaseapp.com",
+            projectId: "pulsepatient",
+            storageBucket: "pulsepatient.firebasestorage.app",
+            messagingSenderId: "1037055506922",
+            appId: "1:1037055506922:web:57d6f2fe682bc9034a1a93"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.db = db;
+        window.collection = collection;
+        window.getDocs = getDocs;
+        window.setDoc = setDoc;
+        window.doc = doc;
+        window.getDoc = getDoc;
+
+        // Hospitals load karna dropdown mein
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const hospSnap = await getDocs(collection(db, "hospitals"));
+                const select = document.getElementById('patientHospital');
+                select.innerHTML = '<option value="">Select Hospital</option>';
+                hospSnap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    select.innerHTML += `<option value="${data.name}">${data.name} - ${data.address || ''}</option>`;
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        });
+    </script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f7f6; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .container { width: 100%; max-width: 480px; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08); }
+        h2 { color: #0077b6; margin-bottom: 5px; text-align: center; }
+        .subtitle { color: #6c757d; font-size: 0.9rem; margin-bottom: 20px; text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; color: #495057; font-size: 0.9rem; }
+        input, select { width: 100%; padding: 11px 14px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 1rem; outline: none; background-color: #fff; }
+        .primary-btn { background-color: #0077b6; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; width: 100%; transition: background-color 0.2s; margin-top: 5px; }
+        .primary-btn:hover { background-color: #023e8a; }
+        .success-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px; border-radius: 8px; margin-top: 15px; color: #047857; text-align: center; display: none; font-size: 0.95rem; }
+        .error-box { background: #fef2f2; border: 1px solid #fca5a5; padding: 12px; border-radius: 8px; margin-top: 15px; color: #991b1b; text-align: center; display: none; font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>🏥 PulsePatient</h2>
+        <p class="subtitle">Patient Token Booking & Report Portal</p>
+
+        <!-- Booking Section -->
+        <div class="form-group">
+            <label>Select Hospital</label>
+            <select id="patientHospital">
+                <option value="">Loading hospitals...</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Patient Full Name</label>
+            <input type="text" id="patientName" placeholder="Enter full name">
+        </div>
+
+        <div class="form-group">
+            <label>Age</label>
+            <input type="number" id="patientAge" placeholder="Enter age">
+        </div>
+
+        <div class="form-group">
+            <label>Mobile Number</label>
+            <input type="tel" id="patientMobile" placeholder="Enter mobile number">
+        </div>
+
+        <div class="form-group">
+            <label>Date of Birth</label>
+            <input type="date" id="patientDob">
+        </div>
+
+        <div class="form-group">
+            <label>Booking Date</label>
+            <input type="date" id="bookingDate">
+        </div>
+
+        <button class="primary-btn" onclick="bookToken()">Book Appointment & Get Token</button>
+
+        <div id="bookingResult" class="success-box" style="display:none;"></div>
+        <div id="bookingError" class="error-box" style="display:none;"></div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('bookingDate').value = today;
+        };
+
+        async function bookToken() {
+            const hospital = document.getElementById('patientHospital').value;
+            const name = document.getElementById('patientName').value.trim();
+            const age = document.getElementById('patientAge').value.trim();
+            const mobile = document.getElementById('patientMobile').value.trim();
+            const dob = document.getElementById('patientDob').value;
+            const bookingDate = document.getElementById('bookingDate').value;
+
+            const resBox = document.getElementById('bookingResult');
+            const errBox = document.getElementById('bookingError');
+            resBox.style.display = 'none';
+            errBox.style.display = 'none';
+
+            if (!hospital || !name || !age || !mobile || !dob || !bookingDate) {
+                errBox.innerText = "Kripya sabhi fields properly fill karein.";
+                errBox.style.display = 'block';
+                return;
+            }
+
+            try {
+                const reportId = "REP-" + Math.floor(1000 + Math.random() * 9000);
+                const docRef = window.doc(window.db, "patients_queue", bookingDate);
+                const docSnap = await window.getDoc(docRef);
+
+                let tokens = docSnap.exists() ? (docSnap.data().tokens || []) : [];
+                const tokenNumber = tokens.length + 1;
+
+                const newPatient = {
+                    hospital, name, age, mobile, dob, bookingDate, reportId, tokenNumber, reportUrl: ""
+                };
+
+                tokens.push(newPatient);
+                await window.setDoc(docRef, { tokens });
+
+                resBox.innerHTML = `Token Booked Successfully!<br><b>Token Number: #${tokenNumber}</b><br><b>Report ID: ${reportId}</b>`;
+                resBox.style.display = 'block';
+            } catch (err) {
+                console.error(err);
+                errBox.innerText = "Booking failed! Firebase connection check karein.";
+                errBox.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
