@@ -3,155 +3,568 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PulsePatient - Patient Portal</title>
-    
-    <!-- Firebase SDKs -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, setDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDInAGlPnHpf6DNWEqDtpsrV3puv8y282Y",
-            authDomain: "pulsepatient.firebaseapp.com",
-            projectId: "pulsepatient",
-            storageBucket: "pulsepatient.firebasestorage.app",
-            messagingSenderId: "1037055506922",
-            appId: "1:1037055506922:web:57d6f2fe682bc9034a1a93"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        window.db = db;
-        window.collection = collection;
-        window.getDocs = getDocs;
-        window.setDoc = setDoc;
-        window.doc = doc;
-        window.getDoc = getDoc;
-
-        // Hospitals load karna dropdown mein
-        window.addEventListener('DOMContentLoaded', async () => {
-            try {
-                const hospSnap = await getDocs(collection(db, "hospitals"));
-                const select = document.getElementById('patientHospital');
-                select.innerHTML = '<option value="">Select Hospital</option>';
-                hospSnap.forEach(docSnap => {
-                    const data = docSnap.data();
-                    select.innerHTML += `<option value="${data.name}">${data.name} - ${data.address || ''}</option>`;
-                });
-            } catch (err) {
-                console.error(err);
-            }
-        });
-    </script>
-
+    <title>ExploreAsam AI</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #f4f7f6; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .container { width: 100%; max-width: 480px; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08); }
-        h2 { color: #0077b6; margin-bottom: 5px; text-align: center; }
-        .subtitle { color: #6c757d; font-size: 0.9rem; margin-bottom: 20px; text-align: center; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 6px; font-weight: 600; color: #495057; font-size: 0.9rem; }
-        input, select { width: 100%; padding: 11px 14px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 1rem; outline: none; background-color: #fff; }
-        .primary-btn { background-color: #0077b6; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; width: 100%; transition: background-color 0.2s; margin-top: 5px; }
-        .primary-btn:hover { background-color: #023e8a; }
-        .success-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px; border-radius: 8px; margin-top: 15px; color: #047857; text-align: center; display: none; font-size: 0.95rem; }
-        .error-box { background: #fef2f2; border: 1px solid #fca5a5; padding: 12px; border-radius: 8px; margin-top: 15px; color: #991b1b; text-align: center; display: none; font-size: 0.95rem; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            background-color: #131314;
+            color: #e3e3e3;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 280px;
+            background: #1e1f20;
+            border-right: 1px solid #282a2c;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+        }
+        .new-chat-btn {
+            background: #282a2c;
+            color: #e3e3e3;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+            transition: background 0.2s;
+        }
+        .new-chat-btn:hover {
+            background: #3c4043;
+        }
+        
+        .history-title {
+            font-size: 0.75rem;
+            color: #8e918f;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            padding-left: 8px;
+        }
+
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .history-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .history-list::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 2px;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            color: #c4c7c5;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.2s;
+        }
+        .history-item:hover {
+            background: #282a2c;
+            color: white;
+        }
+        .history-item.active {
+            background: #2b2c2f;
+            color: white;
+        }
+        .history-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+            padding-right: 10px;
+        }
+
+        /* 3 Dots Menu Button & Dropdown */
+        .menu-dots-btn {
+            background: none;
+            border: none;
+            color: #8e918f;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .menu-dots-btn:hover {
+            color: white;
+            background: #3c4043;
+        }
+        .dropdown-popup {
+            display: none;
+            position: absolute;
+            right: 10px;
+            top: 35px;
+            background: #282a2c;
+            border: 1px solid #3c4043;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            z-index: 100;
+            overflow: hidden;
+        }
+        .dropdown-popup.show {
+            display: block;
+        }
+        .dropdown-item {
+            padding: 8px 16px;
+            font-size: 0.8rem;
+            color: #f87171;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .dropdown-item:hover {
+            background: #3c4043;
+        }
+
+        /* Main Chat Wrapper */
+        .main-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #131314;
+            position: relative;
+        }
+
+        header {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #c4c7c5;
+            border-bottom: 1px solid #282a2c;
+        }
+
+        /* Chat History Box */
+        .chat-box {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .chat-box::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-box::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        .message-row {
+            display: flex;
+            gap: 16px;
+            width: 100%;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message-row.user {
+            justify-content: flex-end;
+        }
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+        .bot-avatar {
+            background: linear-gradient(135deg, #8ab4f8, #c58af9);
+            color: #131314;
+            font-weight: bold;
+        }
+        .user-avatar {
+            background: #3c4043;
+            color: white;
+        }
+
+        .message-bubble {
+            max-width: 75%;
+            padding: 12px 18px;
+            border-radius: 14px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .bot .message-bubble {
+            background: #1e1f20;
+            color: #e3e3e3;
+            border-top-left-radius: 4px;
+        }
+        .user .message-bubble {
+            background: #2b2c2f;
+            color: #ffffff;
+            border-top-right-radius: 4px;
+        }
+
+        /* Welcome Center Screen */
+        .welcome-screen {
+            margin: auto;
+            text-align: center;
+            padding: 1rem;
+        }
+        .welcome-screen h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            background: linear-gradient(90deg, #8ab4f8, #c58af9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .welcome-screen p {
+            color: #8e918f;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+        .chips-grid {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .chip-card {
+            background: #1e1f20;
+            border: 1px solid #282a2c;
+            color: #e3e3e3;
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .chip-card:hover {
+            background: #282a2c;
+            border-color: #8ab4f8;
+        }
+
+        /* Bottom Input Bar */
+        .input-container {
+            padding: 1rem 2rem 2rem 2rem;
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .input-box {
+            background: #1e1f20;
+            border: 1px solid #282a2c;
+            border-radius: 28px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: border-color 0.2s;
+        }
+        .input-box:focus-within {
+            border-color: #8ab4f8;
+        }
+        .chat-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 0.95rem;
+            outline: none;
+        }
+        .chat-input::placeholder {
+            color: #8e918f;
+        }
+        .send-btn {
+            background: #8ab4f8;
+            color: #131314;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+        .send-btn:hover {
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>🏥 PulsePatient</h2>
-        <p class="subtitle">Patient Token Booking & Report Portal</p>
+    <!-- Sidebar with Saved Chats & Delete Options -->
+    <div class="sidebar">
+        <button class="new-chat-btn" onclick="startNewChat()">
+            <span>➕</span> New Chat
+        </button>
+        <div class="history-title">Recent Chats</div>
+        <div class="history-list" id="historyList">
+            <!-- Dynamically populated saved chats -->
+        </div>
+    </div>
 
-        <!-- Booking Section -->
-        <div class="form-group">
-            <label>Select Hospital</label>
-            <select id="patientHospital">
-                <option value="">Loading hospitals...</option>
-            </select>
+    <!-- Main Content Area -->
+    <div class="main-chat">
+        <header>
+            <div>ExploreAsam AI</div>
+        </header>
+
+        <!-- Chat Container / Welcome Screen -->
+        <div class="chat-box" id="chatBox">
+            <div class="welcome-screen" id="welcomeScreen">
+                <h1>Hello, Traveler</h1>
+                <p>What would you like to know about Assam today?</p>
+                <div class="chips-grid">
+                    <div class="chip-card" onclick="sendQuickQuery('Assam ka itihas aur Ahom rajvansh ke bare mein batao')">📜 Assam History</div>
+                    <div class="chip-card" onclick="sendQuickQuery('Kaziranga National Park ki kya khasiyat hai?')">🐘 Kaziranga Park</div>
+                    <div class="chip-card" onclick="sendQuickQuery('ExploreAsam portal kis liye banaya gaya hai?')">🏛️ About Portal</div>
+                </div>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label>Patient Full Name</label>
-            <input type="text" id="patientName" placeholder="Enter full name">
+        <!-- Input Bar -->
+        <div class="input-container">
+            <div class="input-box">
+                <input type="text" id="userInput" class="chat-input" placeholder="Ask ExploreAsam AI..." onkeypress="handleKeyPress(event)">
+                <button class="send-btn" onclick="sendMessage()">&#x27A4;</button>
+            </div>
         </div>
-
-        <div class="form-group">
-            <label>Age</label>
-            <input type="number" id="patientAge" placeholder="Enter age">
-        </div>
-
-        <div class="form-group">
-            <label>Mobile Number</label>
-            <input type="tel" id="patientMobile" placeholder="Enter mobile number">
-        </div>
-
-        <div class="form-group">
-            <label>Date of Birth</label>
-            <input type="date" id="patientDob">
-        </div>
-
-        <div class="form-group">
-            <label>Booking Date</label>
-            <input type="date" id="bookingDate">
-        </div>
-
-        <button class="primary-btn" onclick="bookToken()">Book Appointment & Get Token</button>
-
-        <div id="bookingResult" class="success-box" style="display:none;"></div>
-        <div id="bookingError" class="error-box" style="display:none;"></div>
     </div>
 
     <script>
+        // API key secure placeholder (GitHub se block nahi hoga)
+        const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"; 
+        let currentChatId = Date.now().toString();
+        let sessions = JSON.parse(localStorage.getItem('exploreasam_sessions')) || {};
+
         window.onload = function() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('bookingDate').value = today;
+            renderHistoryList();
         };
 
-        async function bookToken() {
-            const hospital = document.getElementById('patientHospital').value;
-            const name = document.getElementById('patientName').value.trim();
-            const age = document.getElementById('patientAge').value.trim();
-            const mobile = document.getElementById('patientMobile').value.trim();
-            const dob = document.getElementById('patientDob').value;
-            const bookingDate = document.getElementById('bookingDate').value;
+        function startNewChat() {
+            currentChatId = Date.now().toString();
+            document.getElementById('chatBox').innerHTML = `
+                <div class="welcome-screen" id="welcomeScreen">
+                    <h1>Hello, Traveler</h1>
+                    <p>What would you like to know about Assam today?</p>
+                    <div class="chips-grid">
+                        <div class="chip-card" onclick="sendQuickQuery('Assam ka itihas aur Ahom rajvansh ke bare mein batao')">📜 Assam History</div>
+                        <div class="chip-card" onclick="sendQuickQuery('Kaziranga National Park ki kya khasiyat hai?')">🐘 Kaziranga Park</div>
+                        <div class="chip-card" onclick="sendQuickQuery('ExploreAsam portal kis liye banaya gaya hai?')">🏛️ About Portal</div>
+                    </div>
+                </div>
+            `;
+            renderHistoryList();
+        }
 
-            const resBox = document.getElementById('bookingResult');
-            const errBox = document.getElementById('bookingError');
-            resBox.style.display = 'none';
-            errBox.style.display = 'none';
-
-            if (!hospital || !name || !age || !mobile || !dob || !bookingDate) {
-                errBox.innerText = "Kripya sabhi fields properly fill karein.";
-                errBox.style.display = 'block';
-                return;
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
             }
+        }
+
+        function sendQuickQuery(text) {
+            document.getElementById('userInput').value = text;
+            sendMessage();
+        }
+
+        async function sendMessage() {
+            let inputField = document.getElementById('userInput');
+            let query = inputField.value.trim();
+            if (query === '') return;
+
+            let chatBox = document.getElementById('chatBox');
+            let welcome = document.getElementById('welcomeScreen');
+            if (welcome) welcome.remove();
+
+            if (!sessions[currentChatId]) {
+                sessions[currentChatId] = { title: query.slice(0, 25) + '...', messages: [] };
+            }
+
+            appendMessage('user', query);
+            sessions[currentChatId].messages.push({ role: 'user', text: query });
+            saveSessions();
+
+            inputField.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            let botContentId = 'bot-msg-' + Date.now();
+            appendMessage('bot', 'Thinking...', botContentId);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            let botContentDiv = document.getElementById(botContentId);
 
             try {
-                const reportId = "REP-" + Math.floor(1000 + Math.random() * 9000);
-                const docRef = window.doc(window.db, "patients_queue", bookingDate);
-                const docSnap = await window.getDoc(docRef);
+                if (GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
+                    throw new Error("API key not configured");
+                }
 
-                let tokens = docSnap.exists() ? (docSnap.data().tokens || []) : [];
-                const tokenNumber = tokens.length + 1;
+                let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: `You are an expert AI assistant for the 'ExploreAsam' digital heritage portal built for the Assam Innovation Challenge. Provide an accurate, clear, and detailed response to: ${query}` }]
+                        }]
+                    })
+                });
 
-                const newPatient = {
-                    hospital, name, age, mobile, dob, bookingDate, reportId, tokenNumber, reportUrl: ""
-                };
+                let data = await response.json();
 
-                tokens.push(newPatient);
-                await window.setDoc(docRef, { tokens });
-
-                resBox.innerHTML = `Token Booked Successfully!<br><b>Token Number: #${tokenNumber}</b><br><b>Report ID: ${reportId}</b>`;
-                resBox.style.display = 'block';
-            } catch (err) {
-                console.error(err);
-                errBox.innerText = "Booking failed! Firebase connection check karein.";
-                errBox.style.display = 'block';
+                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    let aiReply = data.candidates[0].content.parts[0].text;
+                    botContentDiv.innerHTML = formatAIResponse(aiReply);
+                    sessions[currentChatId].messages.push({ role: 'bot', text: aiReply });
+                    saveSessions();
+                } else {
+                    throw new Error("API Error");
+                }
+            } catch (error) {
+                let smartAnswer = getExploreAsamKnowledge(query);
+                botContentDiv.innerHTML = formatAIResponse(smartAnswer);
+                sessions[currentChatId].messages.push({ role: 'bot', text: smartAnswer });
+                saveSessions();
             }
+
+            chatBox.scrollTop = chatBox.scrollHeight;
+            renderHistoryList();
+        }
+
+        function appendMessage(sender, text, id = '') {
+            let chatBox = document.getElementById('chatBox');
+            let row = document.createElement('div');
+            row.className = `message-row ${sender}`;
+            
+            if (sender === 'user') {
+                row.innerHTML = `
+                    <div class="message-bubble">${escapeHtml(text)}</div>
+                    <div class="avatar user-avatar">U</div>
+                `;
+            } else {
+                row.innerHTML = `
+                    <div class="avatar bot-avatar">✨</div>
+                    <div class="message-bubble" id="${id}">${formatAIResponse(text)}</div>
+                `;
+            }
+            chatBox.appendChild(row);
+        }
+
+        function saveSessions() {
+            localStorage.setItem('exploreasam_sessions', JSON.stringify(sessions));
+        }
+
+        function renderHistoryList() {
+            let list = document.getElementById('historyList');
+            list.innerHTML = '';
+
+            let keys = Object.keys(sessions).reverse();
+            keys.forEach(id => {
+                let item = document.createElement('div');
+                item.className = `history-item ${id === currentChatId ? 'active' : ''}`;
+                
+                item.innerHTML = `
+                    <div class="history-text" onclick="loadChat('${id}')">${escapeHtml(sessions[id].title)}</div>
+                    <button class="menu-dots-btn" onclick="toggleDropdown(event, '${id}')">⋮</button>
+                    <div class="dropdown-popup" id="dropdown-${id}">
+                        <div class="dropdown-item" onclick="deleteChat(event, '${id}')">Delete Chat</div>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function toggleDropdown(event, id) {
+            event.stopPropagation();
+            document.querySelectorAll('.dropdown-popup').forEach(p => p.classList.remove('show'));
+            let popup = document.getElementById(`dropdown-${id}`);
+            popup.classList.toggle('show');
+        }
+
+        window.addEventListener('click', function() {
+            document.querySelectorAll('.dropdown-popup').forEach(p => p.classList.remove('show'));
+        });
+
+        function deleteChat(event, id) {
+            event.stopPropagation();
+            delete sessions[id];
+            saveSessions();
+            
+            if (id === currentChatId) {
+                startNewChat();
+            } else {
+                renderHistoryList();
+            }
+        }
+
+        function loadChat(id) {
+            currentChatId = id;
+            let chatBox = document.getElementById('chatBox');
+            chatBox.innerHTML = '';
+
+            let chatData = sessions[id];
+            if (chatData && chatData.messages) {
+                chatData.messages.forEach(msg => {
+                    appendMessage(msg.role, msg.text);
+                });
+            }
+            renderHistoryList();
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function getExploreAsamKnowledge(q) {
+            q = q.toLowerCase();
+            if (q.includes('history') || q.includes('itihas') || q.includes('ahom')) {
+                return "📜 **Assam History & Ahom Dynasty:**\nAssam ka itihaas bohot samridh hai. 1228 AD mein Swargadeo Sukkapha ne Patkai parvat paar karke Ahom rajya ki neev rakhi thi aur lagbhag 600 saal tak shashan kiya.";
+            } else if (q.includes('kaziranga') || q.includes('park')) {
+                return "🐘 **Kaziranga National Park:**\nYeh Assam ka ek pramukh UNESCO World Heritage Site hai, jo apne ek-sing wale gainde (One-Horned Rhinoceros) ke liye poori duniya mein vikhyaat hai.";
+            } else if (q.includes('portal') || q.includes('exploreasam')) {
+                return "🏛️ **About ExploreAsam Portal:**\nExploreAsam portal Assam Innovation Challenge ke liye banaya gaya hai, jiska mukhya uddeshya Assam ki sanskriti, itihaas, aur virasat ko digital roop mein sanrakshit karna hai.";
+            } else {
+                return `Aapne pucha hai: "${q}". ExploreAsam portal ke history aur culture modules mein is vishay par vistrit jankari uplabdh hai!`;
+            }
+        }
+
+        function formatAIResponse(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\n/g, '<br>');
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
     </script>
 </body>
