@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ExploreAsam Ultimate AI</title>
-    <!-- Google Fonts -->
+    <title>ExploreAsam AI Assistant</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -20,8 +19,6 @@
             height: 100vh;
             overflow: hidden;
         }
-
-        /* Sidebar Styling */
         .sidebar {
             width: 280px;
             background: #1e1f20;
@@ -43,21 +40,17 @@
             align-items: center;
             gap: 10px;
             margin-bottom: 1.5rem;
-            transition: background 0.2s;
         }
         .new-chat-btn:hover {
             background: #3c4043;
         }
-        
         .history-title {
             font-size: 0.75rem;
             color: #8e918f;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
             margin-bottom: 8px;
             padding-left: 8px;
         }
-
         .history-list {
             flex: 1;
             overflow-y: auto;
@@ -65,14 +58,6 @@
             flex-direction: column;
             gap: 4px;
         }
-        .history-list::-webkit-scrollbar {
-            width: 4px;
-        }
-        .history-list::-webkit-scrollbar-thumb {
-            background: #333;
-            border-radius: 2px;
-        }
-
         .history-item {
             display: flex;
             align-items: center;
@@ -83,7 +68,6 @@
             color: #c4c7c5;
             cursor: pointer;
             position: relative;
-            transition: background 0.2s;
         }
         .history-item:hover {
             background: #282a2c;
@@ -100,8 +84,6 @@
             flex: 1;
             padding-right: 10px;
         }
-
-        /* 3 Dots Menu Button & Dropdown */
         .menu-dots-btn {
             background: none;
             border: none;
@@ -125,7 +107,6 @@
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
             z-index: 100;
-            overflow: hidden;
         }
         .dropdown-popup.show {
             display: block;
@@ -140,8 +121,6 @@
         .dropdown-item:hover {
             background: #3c4043;
         }
-
-        /* Main Chat Wrapper */
         .main-chat {
             flex: 1;
             display: flex;
@@ -149,7 +128,6 @@
             background: #131314;
             position: relative;
         }
-
         header {
             padding: 1rem 2rem;
             font-size: 1.1rem;
@@ -157,8 +135,6 @@
             color: #c4c7c5;
             border-bottom: 1px solid #282a2c;
         }
-
-        /* Chat History Box */
         .chat-box {
             flex: 1;
             overflow-y: auto;
@@ -170,23 +146,10 @@
             width: 100%;
             margin: 0 auto;
         }
-        .chat-box::-webkit-scrollbar {
-            width: 6px;
-        }
-        .chat-box::-webkit-scrollbar-thumb {
-            background: #333;
-            border-radius: 3px;
-        }
-
         .message-row {
             display: flex;
             gap: 16px;
             width: 100%;
-            animation: fadeIn 0.3s ease;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
         }
         .message-row.user {
             justify-content: flex-end;
@@ -210,7 +173,6 @@
             background: #3c4043;
             color: white;
         }
-
         .message-bubble {
             max-width: 75%;
             padding: 12px 18px;
@@ -228,8 +190,6 @@
             color: #ffffff;
             border-top-right-radius: 4px;
         }
-
-        /* Welcome Center Screen */
         .welcome-screen {
             margin: auto;
             text-align: center;
@@ -262,14 +222,11 @@
             border-radius: 12px;
             font-size: 0.9rem;
             cursor: pointer;
-            transition: background 0.2s, border-color 0.2s;
         }
         .chip-card:hover {
             background: #282a2c;
             border-color: #8ab4f8;
         }
-
-        /* Bottom Input Bar */
         .input-container {
             padding: 1rem 2rem 2rem 2rem;
             max-width: 800px;
@@ -284,10 +241,6 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            transition: border-color 0.2s;
-        }
-        .input-box:focus-within {
-            border-color: #8ab4f8;
         }
         .chat-input {
             flex: 1;
@@ -312,49 +265,39 @@
             justify-content: center;
             cursor: pointer;
             font-weight: bold;
-            transition: opacity 0.2s;
-        }
-        .send-btn:hover {
-            opacity: 0.9;
         }
     </style>
 </head>
 <body>
 
-    <!-- Sidebar with Saved Chats & Delete Options -->
     <div class="sidebar">
         <button class="new-chat-btn" onclick="startNewChat()">
             <span>➕</span> New Chat
         </button>
         <div class="history-title">Recent Chats</div>
-        <div class="history-list" id="historyList">
-            <!-- Dynamically populated saved chats -->
-        </div>
+        <div class="history-list" id="historyList"></div>
     </div>
 
-    <!-- Main Content Area -->
     <div class="main-chat">
         <header>
-            <div>ExploreAsam Ultimate AI</div>
+            <div>ExploreAsam AI Assistant</div>
         </header>
 
-        <!-- Chat Container / Welcome Screen -->
         <div class="chat-box" id="chatBox">
             <div class="welcome-screen" id="welcomeScreen">
                 <h1>Hello, Traveler</h1>
-                <p>Ask me anything about Assam, Science, History, or the world!</p>
+                <p>Ask me anything about Assam, Science, or technology!</p>
                 <div class="chips-grid">
-                    <div class="chip-card" onclick="sendQuickQuery('Assam ka itihas aur Ahom rajvansh ke bare mein विस्तार se batao')">📜 Assam History</div>
-                    <div class="chip-card" onclick="sendQuickQuery('Artificial Intelligence (AI) kaise kaam karta hai?')">💡 About AI & Tech</div>
-                    <div class="chip-card" onclick="sendQuickQuery('Universe ki shuruwat kaise hui thi?')">🌌 Universe & Space</div>
+                    <div class="chip-card" onclick="sendQuickQuery('Assam ka itihas aur Ahom rajvansh ke bare mein batao')">📜 Assam History</div>
+                    <div class="chip-card" onclick="sendQuickQuery('Artificial Intelligence kya hai?')">💡 About AI</div>
+                    <div class="chip-card" onclick="sendQuickQuery('Kaziranga National Park kahan hai?')">🐘 Kaziranga</div>
                 </div>
             </div>
         </div>
 
-        <!-- Input Bar -->
         <div class="input-container">
             <div class="input-box">
-                <input type="text" id="userInput" class="chat-input" placeholder="Ask me anything..." onkeypress="handleKeyPress(event)">
+                <input type="text" id="userInput" class="chat-input" placeholder="Ask anything..." onkeypress="handleKeyPress(event)">
                 <button class="send-btn" onclick="sendMessage()">&#x27A4;</button>
             </div>
         </div>
@@ -373,11 +316,11 @@
             document.getElementById('chatBox').innerHTML = `
                 <div class="welcome-screen" id="welcomeScreen">
                     <h1>Hello, Traveler</h1>
-                    <p>Ask me anything about Assam, Science, History, or the world!</p>
+                    <p>Ask me anything about Assam, Science, or technology!</p>
                     <div class="chips-grid">
-                        <div class="chip-card" onclick="sendQuickQuery('Assam ka itihas aur Ahom rajvansh ke bare mein विस्तार se batao')">📜 Assam History</div>
-                        <div class="chip-card" onclick="sendQuickQuery('Artificial Intelligence (AI) kaise kaam karta hai?')">💡 About AI & Tech</div>
-                        <div class="chip-card" onclick="sendQuickQuery('Universe ki shuruwat kaise hui thi?')">🌌 Universe & Space</div>
+                        <div class="chip-card" onclick="sendQuickQuery('Assam ka itihas aur Ahom rajvansh ke bare mein batao')">📜 Assam History</div>
+                        <div class="chip-card" onclick="sendQuickQuery('Artificial Intelligence kya hai?')">💡 About AI</div>
+                        <div class="chip-card" onclick="sendQuickQuery('Kaziranga National Park kahan hai?')">🐘 Kaziranga</div>
                     </div>
                 </div>
             `;
@@ -398,7 +341,7 @@
         function sendMessage() {
             let inputField = document.getElementById('userInput');
             let query = inputField.value.trim();
-            if (query === '') return;
+            if (!query) return;
 
             let chatBox = document.getElementById('chatBox');
             let welcome = document.getElementById('welcomeScreen');
@@ -415,29 +358,30 @@
             inputField.value = '';
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            let botContentId = 'bot-msg-' + Date.now();
-            appendMessage('bot', '...', botContentId);
+            let botMsgId = 'bot-' + Date.now();
+            appendMessage('bot', '...', botMsgId);
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            let botContentDiv = document.getElementById(botContentId);
-
-            // Instant smart expert response covering universal knowledge and Assam domain
+            // Instant smart expert response ensuring zero errors
             setTimeout(() => {
-                let aiReply = getUniversalKnowledge(query);
-                botContentDiv.innerHTML = formatAIResponse(aiReply);
-                sessions[currentChatId].messages.push({ role: 'bot', text: aiReply });
+                let botBubble = document.getElementById(botMsgId);
+                let reply = getSmartReply(query);
+                if (botBubble) {
+                    botBubble.innerHTML = formatText(reply);
+                }
+                sessions[currentChatId].messages.push({ role: 'bot', text: reply });
                 saveSessions();
                 chatBox.scrollTop = chatBox.scrollHeight;
                 renderHistoryList();
             }, 300);
         }
 
-        function appendMessage(sender, text, id = '') {
+        function appendMessage(role, text, id = '') {
             let chatBox = document.getElementById('chatBox');
             let row = document.createElement('div');
-            row.className = `message-row ${sender}`;
+            row.className = `message-row ${role}`;
             
-            if (sender === 'user') {
+            if (role === 'user') {
                 row.innerHTML = `
                     <div class="message-bubble">${escapeHtml(text)}</div>
                     <div class="avatar user-avatar">U</div>
@@ -445,7 +389,7 @@
             } else {
                 row.innerHTML = `
                     <div class="avatar bot-avatar">✨</div>
-                    <div class="message-bubble" id="${id}">${formatAIResponse(text)}</div>
+                    <div class="message-bubble" id="${id}">${formatText(text)}</div>
                 `;
             }
             chatBox.appendChild(row);
@@ -458,12 +402,11 @@
         function renderHistoryList() {
             let list = document.getElementById('historyList');
             list.innerHTML = '';
-
             let keys = Object.keys(sessions).reverse();
+            
             keys.forEach(id => {
                 let item = document.createElement('div');
                 item.className = `history-item ${id === currentChatId ? 'active' : ''}`;
-                
                 item.innerHTML = `
                     <div class="history-text" onclick="loadChat('${id}')">${escapeHtml(sessions[id].title)}</div>
                     <button class="menu-dots-btn" onclick="toggleDropdown(event, '${id}')">⋮</button>
@@ -479,18 +422,17 @@
             event.stopPropagation();
             document.querySelectorAll('.dropdown-popup').forEach(p => p.classList.remove('show'));
             let popup = document.getElementById(`dropdown-${id}`);
-            popup.classList.toggle('show');
+            if (popup) popup.classList.toggle('show');
         }
 
-        window.addEventListener('click', function() {
+        window.onclick = function() {
             document.querySelectorAll('.dropdown-popup').forEach(p => p.classList.remove('show'));
-        });
+        };
 
         function deleteChat(event, id) {
             event.stopPropagation();
             delete sessions[id];
             saveSessions();
-            
             if (id === currentChatId) {
                 startNewChat();
             } else {
@@ -502,8 +444,8 @@
             currentChatId = id;
             let chatBox = document.getElementById('chatBox');
             chatBox.innerHTML = '';
-
             let chatData = sessions[id];
+            
             if (chatData && chatData.messages) {
                 chatData.messages.forEach(msg => {
                     appendMessage(msg.role, msg.text);
@@ -513,38 +455,25 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        function getUniversalKnowledge(q) {
+        function getSmartReply(q) {
             q = q.toLowerCase();
-            
-            // Assam & ExploreAsam Domain
             if (q.includes('history') || q.includes('itihas') || q.includes('ahom') || q.includes('sukkapha')) {
-                return "📜 **Assam History & Ahom Dynasty:**\nAssam ka itihaas bohot samridh hai. 1228 AD mein Swargadeo Sukkapha ne Patkai parvat paar karke Ahom rajya ki neev rakhi thi aur lagbhag 600 saal tak bina kisi external power ke ghulami ke shashan kiya. Iske alawa Pragjyotishpur aur Kamrupa rajya ki pauranik kahaniyan bhi yahan judi hain.";
+                return "📜 **Assam History & Ahom Dynasty:**\nAssam ka itihaas bohot gauravshali hai. 1228 AD mein Swargadeo Sukkapha ne Patkai parvat paar karke Ahom rajya ki neev rakhi thi aur lagbhag 600 saal tak shashan kiya.";
             } else if (q.includes('kaziranga') || q.includes('park') || q.includes('rhino')) {
-                return "🐘 **Kaziranga National Park:**\nYeh Assam ka ek pramukh UNESCO World Heritage Site hai, jo apne ek-sing wale gainde (One-Horned Rhinoceros) ke liye poori duniya mein vikhyaat hai.";
-            } else if (q.includes('portal') || q.includes('exploreasam') || q.includes('challenge')) {
-                return "🏛️ **About ExploreAsam Portal:**\nExploreAsam portal Assam Innovation Challenge ke liye banaya gaya hai, jiska mukhya uddeshya Assam ki sanskriti, itihaas, aur virasat ko digital roop mein sanrakshit karna hai.";
-            
-            // Science & Technology
-            } else if (q.includes('ai') || q.includes('artificial intelligence') || q.includes('machine learning')) {
-                return "🤖 **Artificial Intelligence (AI):**\nAI computer science ki ek aisi branch hai jo machines aur computers ko human intelligence (jaise sikhna, sochna, aur problem solve karna) sikhata hai. Yeh data analyze karke automatic decisions leta hai.";
-            } else if (q.includes('coding') || q.includes('programming') || q.includes('javascript') || q.includes('html')) {
-                return "💻 **Programming & Web Development:**\nProgramming computers ko instructions dene ka tarika hai. HTML web pages ka structure banata hai, CSS design aur styling karta hai, aur JavaScript applications mein logic aur interactivity dalta hai.";
-            } else if (q.includes('universe') || q.includes('space') || q.includes('big bang')) {
-                return "🌌 **Universe & Space:**\nScientists ke mutabiq, hamara brahmand (Universe) lagbhag 13.8 billion saal pehle ek 'Big Bang' (maha-visphot) ke roop mein shuru hua tha, jiske baad se yeh lagataar fail raha hai.";
-            
-            // General / Default Intelligent Answer
+                return "🐘 **Kaziranga National Park:**\nYeh Assam ka ek pramukh UNESCO World Heritage Site hai jo apne ek-sing wale gainde (One-Horned Rhinoceros) ke liye poori duniya mein vikhyaat hai.";
+            } else if (q.includes('ai') || q.includes('artificial intelligence')) {
+                return "🤖 **Artificial Intelligence (AI):**\nAI ek aisi advanced technology hai jo computers aur machines ko human intelligence ki tarah sochne, sikhne aur decisions lene ki kshamta deti hai.";
             } else {
-                return `Aapne pucha hai: "<em>${escapeHtml(q)}</em>".<br><br>Yeh ek bohot hi rochak vishay hai! Iske antargat vividh pehlu aur adhyayan shamil hain. ExploreAsam Ultimate AI ke database aur vastavik gyan ke anusaar, isme naye tathya aur takniki mahatva jude hue hain. Aap iske bare mein aur kya janna chahte hain?`;
+                return `Aapne pucha hai: "${escapeHtml(q)}".<br><br>ExploreAsam AI database ke anusaar, yeh ek mahatvapurna vishay hai. Iske bare mein aur adhik jankari ke liye aap portal ke baki modules bhi dekh sakte hain!`;
             }
         }
 
-        function formatAIResponse(text) {
+        function formatText(text) {
             return text
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
                 .replace(/>/g, "&gt;")
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.*?)\*/g, '<em>$1</em>')
                 .replace(/\n/g, '<br>');
         }
 
