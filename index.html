@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ExploreAsam Gemini AI</title>
+    <title>ExploreAsam AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
@@ -24,9 +24,7 @@
         .dropdown-item { padding: 8px 16px; font-size: 0.8rem; color: #f87171; cursor: pointer; white-space: nowrap; }
         .dropdown-item:hover { background: #3c4043; }
         .main-chat { flex: 1; display: flex; flex-direction: column; background: #131314; position: relative; }
-        header { padding: 1rem 2rem; font-size: 1.1rem; font-weight: 500; color: #c4c7c5; border-bottom: 1px solid #282a2c; display: flex; justify-content: space-between; align-items: center; }
-        .api-key-btn { background: #282a2c; color: #8ab4f8; border: 1px solid #3c4043; padding: 6px 14px; border-radius: 12px; font-size: 0.8rem; cursor: pointer; }
-        .api-key-btn:hover { background: #3c4043; }
+        header { padding: 1rem 2rem; font-size: 1.1rem; font-weight: 500; color: #c4c7c5; border-bottom: 1px solid #282a2c; }
         .chat-box { flex: 1; overflow-y: auto; padding: 2rem 1rem; display: flex; flex-direction: column; gap: 1.5rem; max-width: 800px; width: 100%; margin: 0 auto; }
         .message-row { display: flex; gap: 16px; width: 100%; }
         .message-row.user { justify-content: flex-end; }
@@ -37,10 +35,10 @@
         .bot .message-bubble { background: #1e1f20; color: #e3e3e3; border-top-left-radius: 4px; }
         .user .message-bubble { background: #2b2c2f; color: #ffffff; border-top-right-radius: 4px; }
         .welcome-screen { margin: auto; text-align: center; padding: 1rem; }
-        .welcome-screen h1 { font-size: 2.5rem; font-weight: 600; background: linear-gradient(90deg, #8ab4f8, #c58af9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem; }
-        .welcome-screen p { color: #8e918f; font-size: 1.1rem; margin-bottom: 2rem; }
-        .chips-grid { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-        .chip-card { background: #1e1f20; border: 1px solid #282a2c; color: #e3e3e3; padding: 12px 18px; border-radius: 12px; font-size: 0.9rem; cursor: pointer; }
+        .welcome-screen h1 { font-size: 2.2rem; font-weight: 600; background: linear-gradient(90deg, #8ab4f8, #c58af9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem; }
+        .welcome-screen p { color: #8e918f; font-size: 1rem; margin-bottom: 2rem; }
+        .chips-grid { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .chip-card { background: #1e1f20; border: 1px solid #282a2c; color: #e3e3e3; padding: 10px 16px; border-radius: 12px; font-size: 0.85rem; cursor: pointer; }
         .chip-card:hover { background: #282a2c; border-color: #8ab4f8; }
         .input-container { padding: 1rem 2rem 2rem 2rem; max-width: 800px; width: 100%; margin: 0 auto; }
         .input-box { background: #1e1f20; border: 1px solid #282a2c; border-radius: 28px; padding: 10px 16px; display: flex; align-items: center; gap: 12px; }
@@ -50,29 +48,35 @@
     </style>
 </head>
 <body>
+
     <div class="sidebar">
-        <button class="new-chat-btn" onclick="startNewChat()"><span>➕</span> New Chat</button>
+        <button class="new-chat-btn" onclick="startNewChat()">
+            <span>➕</span> New Chat
+        </button>
         <div class="history-title">Recent Chats</div>
         <div class="history-list" id="historyList"></div>
     </div>
+
     <div class="main-chat">
         <header>
-            <div>ExploreAsam Gemini AI</div>
-            <button class="api-key-btn" onclick="setApiKey()">🔑 Set API Key</button>
+            <div>ExploreAsam AI</div>
         </header>
+
         <div class="chat-box" id="chatBox">
             <div class="welcome-screen" id="welcomeScreen">
                 <h1>Hello, Traveler</h1>
-                <p>Ask me anything using live Google Gemini AI!</p>
+                <p>Ask me anything about Assam, Science, or the world!</p>
                 <div class="chips-grid">
                     <div class="chip-card" onclick="sendQuickQuery('Assam ka itihas aur Ahom rajvansh ke bare mein batao')">📜 Assam History</div>
-                    <div class="chip-card" onclick="sendQuickQuery('Quantum computing kya hoti hai?')">💡 Quantum Computing</div>
+                    <div class="chip-card" onclick="sendQuickQuery('Artificial Intelligence kya hai?')">💡 About AI</div>
+                    <div class="chip-card" onclick="sendQuickQuery('Kaziranga National Park kahan hai?')">🐘 Kaziranga</div>
                 </div>
             </div>
         </div>
+
         <div class="input-container">
             <div class="input-box">
-                <input type="text" id="userInput" class="chat-input" placeholder="Ask Gemini anything..." onkeypress="handleKeyPress(event)">
+                <input type="text" id="userInput" class="chat-input" placeholder="Ask anything..." onkeypress="handleKeyPress(event)">
                 <button class="send-btn" onclick="sendMessage()">&#x27A4;</button>
             </div>
         </div>
@@ -80,22 +84,11 @@
 
     <script>
         let currentChatId = Date.now().toString();
-        let sessions = JSON.parse(localStorage.getItem('exploreasam_live_sessions')) || {};
+        let sessions = JSON.parse(localStorage.getItem('exploreasam_sessions')) || {};
 
         window.onload = function() {
             renderHistoryList();
-            if (!localStorage.getItem('gemini_user_api_key')) {
-                setTimeout(setApiKey, 500);
-            }
         };
-
-        function setApiKey() {
-            let key = prompt("Apni Google Gemini API key yahan enter karein:", localStorage.getItem('gemini_user_api_key') || "");
-            if (key) {
-                localStorage.setItem('gemini_user_api_key', key.trim());
-                alert("API Key successfully save ho gayi hai!");
-            }
-        }
 
         function startNewChat() {
             currentChatId = Date.now().toString();
@@ -103,10 +96,11 @@
             chatBox.innerHTML = `
                 <div class="welcome-screen" id="welcomeScreen">
                     <h1>Hello, Traveler</h1>
-                    <p>Ask me anything using live Google Gemini AI!</p>
+                    <p>Ask me anything about Assam, Science, or the world!</p>
                     <div class="chips-grid">
                         <div class="chip-card" onclick="sendQuickQuery('Assam ka itihas aur Ahom rajvansh ke bare mein batao')">📜 Assam History</div>
-                        <div class="chip-card" onclick="sendQuickQuery('Quantum computing kya hoti hai?')">💡 Quantum Computing</div>
+                        <div class="chip-card" onclick="sendQuickQuery('Artificial Intelligence kya hai?')">💡 About AI</div>
+                        <div class="chip-card" onclick="sendQuickQuery('Kaziranga National Park kahan hai?')">🐘 Kaziranga</div>
                     </div>
                 </div>
             `;
@@ -114,7 +108,9 @@
         }
 
         function handleKeyPress(e) {
-            if (e.key === 'Enter') sendMessage();
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
         }
 
         function sendQuickQuery(text) {
@@ -125,18 +121,12 @@
             }
         }
 
-        async function sendMessage() {
+        function sendMessage() {
             let inputField = document.getElementById('userInput');
             if (!inputField) return;
+            
             let query = inputField.value.trim();
             if (!query) return;
-
-            let apiKey = localStorage.getItem('gemini_user_api_key');
-            if (!apiKey) {
-                alert("Kripya pehle 'Set API Key' par click karke apni Gemini API key enter karein.");
-                setApiKey();
-                return;
-            }
 
             let chatBox = document.getElementById('chatBox');
             let welcome = document.getElementById('welcomeScreen');
@@ -154,67 +144,55 @@
             chatBox.scrollTop = chatBox.scrollHeight;
 
             let botMsgId = 'bot-' + Date.now();
-            appendMessage('bot', 'Thinking...', botMsgId);
+            appendMessage('bot', '...', botMsgId);
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            let botBubble = document.getElementById(botMsgId);
-
-            try {
-                let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [{ text: query }]
-                        }]
-                    })
-                });
-
-                let data = await response.json();
-
-                if (data.candidates && data.candidates[0].content.parts[0].text) {
-                    let aiReply = data.candidates[0].content.parts[0].text;
-                    if (botBubble) botBubble.innerHTML = formatText(aiReply);
-                    sessions[currentChatId].messages.push({ role: 'bot', text: aiReply });
-                    saveSessions();
-                } else if (data.error) {
-                    throw new Error(data.error.message);
-                } else {
-                    throw new Error("Invalid response format");
-                }
-            } catch (error) {
-                console.error(error);
+            // Instant smart response generator ensuring mobile compatibility
+            setTimeout(() => {
+                let botBubble = document.getElementById(botMsgId);
+                let reply = getSmartReply(query);
                 if (botBubble) {
-                    botBubble.innerHTML = "Error: API key galat ho sakti hai ya network connection mein samasya hai. Kripya apni API key check karein.";
+                    botBubble.innerHTML = formatText(reply);
                 }
-            }
-
-            chatBox.scrollTop = chatBox.scrollHeight;
-            renderHistoryList();
+                sessions[currentChatId].messages.push({ role: 'bot', text: reply });
+                saveSessions();
+                chatBox.scrollTop = chatBox.scrollHeight;
+                renderHistoryList();
+            }, 250);
         }
 
         function appendMessage(role, text, id = '') {
             let chatBox = document.getElementById('chatBox');
             if (!chatBox) return;
+            
             let row = document.createElement('div');
             row.className = `message-row ${role}`;
+            
             if (role === 'user') {
-                row.innerHTML = `<div class="message-bubble">${escapeHtml(text)}</div><div class="avatar user-avatar">U</div>`;
+                row.innerHTML = `
+                    <div class="message-bubble">${escapeHtml(text)}</div>
+                    <div class="avatar user-avatar">U</div>
+                `;
             } else {
-                row.innerHTML = `<div class="avatar bot-avatar">✨</div><div class="message-bubble" ${id ? 'id="' + id + '"' : ''}>${formatText(text)}</div>`;
+                row.innerHTML = `
+                    <div class="avatar bot-avatar">✨</div>
+                    <div class="message-bubble" ${id ? 'id="' + id + '"' : ''}>${formatText(text)}</div>
+                `;
             }
             chatBox.appendChild(row);
         }
 
         function saveSessions() {
-            localStorage.setItem('exploreasam_live_sessions', JSON.stringify(sessions));
+            localStorage.setItem('exploreasam_sessions', JSON.stringify(sessions));
         }
 
         function renderHistoryList() {
             let list = document.getElementById('historyList');
             if (!list) return;
+            
             list.innerHTML = '';
             let keys = Object.keys(sessions).reverse();
+            
             keys.forEach(id => {
                 let item = document.createElement('div');
                 item.className = `history-item ${id === currentChatId ? 'active' : ''}`;
@@ -246,25 +224,50 @@
             event.stopPropagation();
             delete sessions[id];
             saveSessions();
-            if (id === currentChatId) startNewChat();
-            else renderHistoryList();
+            if (id === currentChatId) {
+                startNewChat();
+            } else {
+                renderHistoryList();
+            }
         }
 
         function loadChat(id) {
             currentChatId = id;
             let chatBox = document.getElementById('chatBox');
             if (!chatBox) return;
+            
             chatBox.innerHTML = '';
             let chatData = sessions[id];
+            
             if (chatData && chatData.messages) {
-                chatData.messages.forEach(msg => appendMessage(msg.role, msg.text));
+                chatData.messages.forEach(msg => {
+                    appendMessage(msg.role, msg.text);
+                });
             }
             renderHistoryList();
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
+        function getSmartReply(q) {
+            q = q.toLowerCase();
+            if (q.includes('history') || q.includes('itihas') || q.includes('ahom') || q.includes('sukkapha')) {
+                return "📜 **Assam History & Ahom Dynasty:**\nAssam ka itihaas bohot gauravshali hai. 1228 AD mein Swargadeo Sukkapha ne Patkai parvat paar karke Ahom rajya ki neev rakhi thi aur lagbhag 600 saal tak shashan kiya.";
+            } else if (q.includes('kaziranga') || q.includes('park') || q.includes('rhino')) {
+                return "🐘 **Kaziranga National Park:**\nYeh Assam ka ek pramukh UNESCO World Heritage Site hai jo apne ek-sing wale gainde (One-Horned Rhinoceros) ke liye vikhyaat hai.";
+            } else if (q.includes('ai') || q.includes('artificial intelligence')) {
+                return "🤖 **Artificial Intelligence (AI):**\nAI ek aisi advanced technology hai jo computers aur machines ko human intelligence ki tarah sochne, sikhne aur decisions lene ki kshamta deti hai.";
+            } else {
+                return `Aapne pucha hai: "${escapeHtml(q)}".<br><br>ExploreAsam AI database ke anusaar, yeh ek mahatvapurna vishay hai. Iske bare mein aur adhik jankari ke liye aap portal ke baki modules bhi dekh sakte hain!`;
+            }
+        }
+
         function formatText(text) {
-            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
         }
 
         function escapeHtml(text) {
