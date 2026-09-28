@@ -69,7 +69,7 @@
                 <div class="chips-grid">
                     <div class="chip-card" onclick="sendQuickQuery('Assam ka itihas aur Ahom rajvansh ke bare mein batao')">📜 Assam History</div>
                     <div class="chip-card" onclick="sendQuickQuery('Artificial Intelligence kya hai?')">💡 About AI</div>
-                    <div class="chip-card" onclick="sendQuickQuery('Kaziranga National Park kahan hai?')">🐘 Kaziranga</div>
+                    <div class="chip-card" onclick="sendQuickCardQuery('Kaziranga National Park kahan hai?')">🐘 Kaziranga</div>
                 </div>
             </div>
         </div>
@@ -100,7 +100,7 @@
                     <div class="chips-grid">
                         <div class="chip-card" onclick="sendQuickQuery('Assam ka itihas aur Ahom rajvansh ke bare mein batao')">📜 Assam History</div>
                         <div class="chip-card" onclick="sendQuickQuery('Artificial Intelligence kya hai?')">💡 About AI</div>
-                        <div class="chip-card" onclick="sendQuickQuery('Kaziranga National Park kahan hai?')">🐘 Kaziranga</div>
+                        <div class="chip-card" onclick="sendQuickCardQuery('Kaziranga National Park kahan hai?')">🐘 Kaziranga</div>
                     </div>
                 </div>
             `;
@@ -119,6 +119,10 @@
                 inputField.value = text;
                 sendMessage();
             }
+        }
+
+        function sendQuickCardQuery(text) {
+            sendQuickQuery(text);
         }
 
         function sendMessage() {
@@ -147,7 +151,7 @@
             appendMessage('bot', '...', botMsgId);
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // Instant smart response generator ensuring mobile compatibility
+            // Instant smart reply for everyone visiting the website
             setTimeout(() => {
                 let botBubble = document.getElementById(botMsgId);
                 let reply = getSmartReply(query);
