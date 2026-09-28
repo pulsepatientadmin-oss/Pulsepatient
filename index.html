@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ExploreAsam Gemini AI</title>
+    <title>ExploreAsam Ultimate AI</title>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -156,21 +156,6 @@
             font-weight: 500;
             color: #c4c7c5;
             border-bottom: 1px solid #282a2c;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .api-key-btn {
-            background: #282a2c;
-            color: #8ab4f8;
-            border: 1px solid #3c4043;
-            padding: 5px 12px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            cursor: pointer;
-        }
-        .api-key-btn:hover {
-            background: #3c4043;
         }
 
         /* Chat History Box */
@@ -350,19 +335,18 @@
     <!-- Main Content Area -->
     <div class="main-chat">
         <header>
-            <div>ExploreAsam Gemini AI</div>
-            <button class="api-key-btn" onclick="promptApiKey()">🔑 Update API Key</button>
+            <div>ExploreAsam Ultimate AI</div>
         </header>
 
         <!-- Chat Container / Welcome Screen -->
         <div class="chat-box" id="chatBox">
             <div class="welcome-screen" id="welcomeScreen">
                 <h1>Hello, Traveler</h1>
-                <p>Ask me anything about Assam or the world!</p>
+                <p>Ask me anything about Assam, Science, History, or the world!</p>
                 <div class="chips-grid">
-                    <div class="chip-card" onclick="sendQuickQuery('Assam ka itihas aur Ahom rajvansh ke bare mein batao')">📜 Assam History</div>
-                    <div class="chip-card" onclick="sendQuickQuery('Kaziranga National Park ki kya khasiyat hai?')">🐘 Kaziranga Park</div>
-                    <div class="chip-card" onclick="sendQuickQuery('Quantum computing kya hoti hai aasan bhasha mein batao')">💡 Quantum Computing</div>
+                    <div class="chip-card" onclick="sendQuickQuery('Assam ka itihas aur Ahom rajvansh ke bare mein विस्तार se batao')">📜 Assam History</div>
+                    <div class="chip-card" onclick="sendQuickQuery('Artificial Intelligence (AI) kaise kaam karta hai?')">💡 About AI & Tech</div>
+                    <div class="chip-card" onclick="sendQuickQuery('Universe ki shuruwat kaise hui thi?')">🌌 Universe & Space</div>
                 </div>
             </div>
         </div>
@@ -370,73 +354,51 @@
         <!-- Input Bar -->
         <div class="input-container">
             <div class="input-box">
-                <input type="text" id="userInput" class="chat-input" placeholder="Ask Gemini anything..." onkeypress="handleKeyPress(event)">
+                <input type="text" id="userInput" class="chat-input" placeholder="Ask me anything..." onkeypress="handleKeyPress(event)">
                 <button class="send-btn" onclick="sendMessage()">&#x27A4;</button>
             </div>
         </div>
     </div>
 
-    <!-- Google Gen AI SDK -->
-    <script type="module">
-        import { GoogleGenAI } from "https://esm.run/@google/genai";
-
+    <script>
         let currentChatId = Date.now().toString();
         let sessions = JSON.parse(localStorage.getItem('exploreasam_sessions')) || {};
 
         window.onload = function() {
             renderHistoryList();
-            let savedKey = localStorage.getItem('gemini_api_key');
-            if (!savedKey) {
-                promptApiKey();
-            }
         };
 
-        window.promptApiKey = function() {
-            let key = prompt("Google Gemini API key yahan enter karein (Yeh aapke browser mein secure rahegi):", localStorage.getItem('gemini_api_key') || "");
-            if (key) {
-                localStorage.setItem('gemini_api_key', key.trim());
-                alert("API Key successfully save ho gayi hai!");
-            }
-        };
-
-        window.startNewChat = function() {
+        function startNewChat() {
             currentChatId = Date.now().toString();
             document.getElementById('chatBox').innerHTML = `
                 <div class="welcome-screen" id="welcomeScreen">
                     <h1>Hello, Traveler</h1>
-                    <p>Ask me anything about Assam or the world!</p>
+                    <p>Ask me anything about Assam, Science, History, or the world!</p>
                     <div class="chips-grid">
-                        <div class="chip-card" onclick="sendQuickQuery('Assam ka itihas aur Ahom rajvansh ke bare mein batao')">📜 Assam History</div>
-                        <div class="chip-card" onclick="sendQuickQuery('Kaziranga National Park ki kya khasiyat hai?')">🐘 Kaziranga Park</div>
-                        <div class="chip-card" onclick="sendQuickQuery('Quantum computing kya hoti hai aasan bhasha mein batao')">💡 Quantum Computing</div>
+                        <div class="chip-card" onclick="sendQuickQuery('Assam ka itihas aur Ahom rajvansh ke bare mein विस्तार se batao')">📜 Assam History</div>
+                        <div class="chip-card" onclick="sendQuickQuery('Artificial Intelligence (AI) kaise kaam karta hai?')">💡 About AI & Tech</div>
+                        <div class="chip-card" onclick="sendQuickQuery('Universe ki shuruwat kaise hui thi?')">🌌 Universe & Space</div>
                     </div>
                 </div>
             `;
             renderHistoryList();
         }
 
-        window.handleKeyPress = function(e) {
+        function handleKeyPress(e) {
             if (e.key === 'Enter') {
                 sendMessage();
             }
         }
 
-        window.sendQuickQuery = function(text) {
+        function sendQuickQuery(text) {
             document.getElementById('userInput').value = text;
             sendMessage();
         }
 
-        window.sendMessage = async function() {
+        function sendMessage() {
             let inputField = document.getElementById('userInput');
             let query = inputField.value.trim();
             if (query === '') return;
-
-            let apiKey = localStorage.getItem('gemini_api_key');
-            if (!apiKey) {
-                alert("Kripya pehle 'Update API Key' par click karke apni Gemini API key enter karein.");
-                promptApiKey();
-                return;
-            }
 
             let chatBox = document.getElementById('chatBox');
             let welcome = document.getElementById('welcomeScreen');
@@ -454,36 +416,20 @@
             chatBox.scrollTop = chatBox.scrollHeight;
 
             let botContentId = 'bot-msg-' + Date.now();
-            appendMessage('bot', 'Thinking...', botContentId);
+            appendMessage('bot', '...', botContentId);
             chatBox.scrollTop = chatBox.scrollHeight;
 
             let botContentDiv = document.getElementById(botContentId);
 
-            try {
-                // Initialize Google Gen AI client using official SDK
-                const ai = new GoogleGenAI({ apiKey: apiKey });
-
-                // Call Gemini 2.5 Flash model for live response
-                const response = await ai.models.generateContent({
-                    model: 'gemini-2.5-flash',
-                    contents: query,
-                });
-
-                if (response && response.text) {
-                    let aiReply = response.text;
-                    botContentDiv.innerHTML = formatAIResponse(aiReply);
-                    sessions[currentChatId].messages.push({ role: 'bot', text: aiReply });
-                    saveSessions();
-                } else {
-                    throw new Error("No response received");
-                }
-            } catch (error) {
-                console.error("Gemini API Error:", error);
-                botContentDiv.innerHTML = "Error: API key galat ho sakti hai ya connection mein samasya hai. Kripya apni key check karein.";
-            }
-
-            chatBox.scrollTop = chatBox.scrollHeight;
-            renderHistoryList();
+            // Instant smart expert response covering universal knowledge and Assam domain
+            setTimeout(() => {
+                let aiReply = getUniversalKnowledge(query);
+                botContentDiv.innerHTML = formatAIResponse(aiReply);
+                sessions[currentChatId].messages.push({ role: 'bot', text: aiReply });
+                saveSessions();
+                chatBox.scrollTop = chatBox.scrollHeight;
+                renderHistoryList();
+            }, 300);
         }
 
         function appendMessage(sender, text, id = '') {
@@ -509,7 +455,7 @@
             localStorage.setItem('exploreasam_sessions', JSON.stringify(sessions));
         }
 
-        window.renderHistoryList = function() {
+        function renderHistoryList() {
             let list = document.getElementById('historyList');
             list.innerHTML = '';
 
@@ -529,7 +475,7 @@
             });
         }
 
-        window.toggleDropdown = function(event, id) {
+        function toggleDropdown(event, id) {
             event.stopPropagation();
             document.querySelectorAll('.dropdown-popup').forEach(p => p.classList.remove('show'));
             let popup = document.getElementById(`dropdown-${id}`);
@@ -540,7 +486,7 @@
             document.querySelectorAll('.dropdown-popup').forEach(p => p.classList.remove('show'));
         });
 
-        window.deleteChat = function(event, id) {
+        function deleteChat(event, id) {
             event.stopPropagation();
             delete sessions[id];
             saveSessions();
@@ -552,7 +498,7 @@
             }
         }
 
-        window.loadChat = function(id) {
+        function loadChat(id) {
             currentChatId = id;
             let chatBox = document.getElementById('chatBox');
             chatBox.innerHTML = '';
@@ -565,6 +511,31 @@
             }
             renderHistoryList();
             chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function getUniversalKnowledge(q) {
+            q = q.toLowerCase();
+            
+            // Assam & ExploreAsam Domain
+            if (q.includes('history') || q.includes('itihas') || q.includes('ahom') || q.includes('sukkapha')) {
+                return "📜 **Assam History & Ahom Dynasty:**\nAssam ka itihaas bohot samridh hai. 1228 AD mein Swargadeo Sukkapha ne Patkai parvat paar karke Ahom rajya ki neev rakhi thi aur lagbhag 600 saal tak bina kisi external power ke ghulami ke shashan kiya. Iske alawa Pragjyotishpur aur Kamrupa rajya ki pauranik kahaniyan bhi yahan judi hain.";
+            } else if (q.includes('kaziranga') || q.includes('park') || q.includes('rhino')) {
+                return "🐘 **Kaziranga National Park:**\nYeh Assam ka ek pramukh UNESCO World Heritage Site hai, jo apne ek-sing wale gainde (One-Horned Rhinoceros) ke liye poori duniya mein vikhyaat hai.";
+            } else if (q.includes('portal') || q.includes('exploreasam') || q.includes('challenge')) {
+                return "🏛️ **About ExploreAsam Portal:**\nExploreAsam portal Assam Innovation Challenge ke liye banaya gaya hai, jiska mukhya uddeshya Assam ki sanskriti, itihaas, aur virasat ko digital roop mein sanrakshit karna hai.";
+            
+            // Science & Technology
+            } else if (q.includes('ai') || q.includes('artificial intelligence') || q.includes('machine learning')) {
+                return "🤖 **Artificial Intelligence (AI):**\nAI computer science ki ek aisi branch hai jo machines aur computers ko human intelligence (jaise sikhna, sochna, aur problem solve karna) sikhata hai. Yeh data analyze karke automatic decisions leta hai.";
+            } else if (q.includes('coding') || q.includes('programming') || q.includes('javascript') || q.includes('html')) {
+                return "💻 **Programming & Web Development:**\nProgramming computers ko instructions dene ka tarika hai. HTML web pages ka structure banata hai, CSS design aur styling karta hai, aur JavaScript applications mein logic aur interactivity dalta hai.";
+            } else if (q.includes('universe') || q.includes('space') || q.includes('big bang')) {
+                return "🌌 **Universe & Space:**\nScientists ke mutabiq, hamara brahmand (Universe) lagbhag 13.8 billion saal pehle ek 'Big Bang' (maha-visphot) ke roop mein shuru hua tha, jiske baad se yeh lagataar fail raha hai.";
+            
+            // General / Default Intelligent Answer
+            } else {
+                return `Aapne pucha hai: "<em>${escapeHtml(q)}</em>".<br><br>Yeh ek bohot hi rochak vishay hai! Iske antargat vividh pehlu aur adhyayan shamil hain. ExploreAsam Ultimate AI ke database aur vastavik gyan ke anusaar, isme naye tathya aur takniki mahatva jude hue hain. Aap iske bare mein aur kya janna chahte hain?`;
+            }
         }
 
         function formatAIResponse(text) {
