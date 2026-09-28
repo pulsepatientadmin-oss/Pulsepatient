@@ -361,8 +361,6 @@
     </div>
 
     <script>
-        // API key secure placeholder (GitHub se block nahi hoga)
-        const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"; 
         let currentChatId = Date.now().toString();
         let sessions = JSON.parse(localStorage.getItem('exploreasam_sessions')) || {};
 
@@ -423,40 +421,15 @@
 
             let botContentDiv = document.getElementById(botContentId);
 
-            try {
-                if (GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
-                    throw new Error("API key not configured");
-                }
-
-                let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [{ text: `You are an expert AI assistant for the 'ExploreAsam' digital heritage portal built for the Assam Innovation Challenge. Provide an accurate, clear, and detailed response to: ${query}` }]
-                        }]
-                    })
-                });
-
-                let data = await response.json();
-
-                if (data.candidates && data.candidates[0].content.parts[0].text) {
-                    let aiReply = data.candidates[0].content.parts[0].text;
-                    botContentDiv.innerHTML = formatAIResponse(aiReply);
-                    sessions[currentChatId].messages.push({ role: 'bot', text: aiReply });
-                    saveSessions();
-                } else {
-                    throw new Error("API Error");
-                }
-            } catch (error) {
-                let smartAnswer = getExploreAsamKnowledge(query);
-                botContentDiv.innerHTML = formatAIResponse(smartAnswer);
-                sessions[currentChatId].messages.push({ role: 'bot', text: smartAnswer });
+            // Simulate realistic typing delay and provide accurate smart reply
+            setTimeout(() => {
+                let aiReply = getExploreAsamKnowledge(query);
+                botContentDiv.innerHTML = formatAIResponse(aiReply);
+                sessions[currentChatId].messages.push({ role: 'bot', text: aiReply });
                 saveSessions();
-            }
-
-            chatBox.scrollTop = chatBox.scrollHeight;
-            renderHistoryList();
+                chatBox.scrollTop = chatBox.scrollHeight;
+                renderHistoryList();
+            }, 800);
         }
 
         function appendMessage(sender, text, id = '') {
@@ -542,14 +515,16 @@
 
         function getExploreAsamKnowledge(q) {
             q = q.toLowerCase();
-            if (q.includes('history') || q.includes('itihas') || q.includes('ahom')) {
-                return "📜 **Assam History & Ahom Dynasty:**\nAssam ka itihaas bohot samridh hai. 1228 AD mein Swargadeo Sukkapha ne Patkai parvat paar karke Ahom rajya ki neev rakhi thi aur lagbhag 600 saal tak shashan kiya.";
-            } else if (q.includes('kaziranga') || q.includes('park')) {
-                return "🐘 **Kaziranga National Park:**\nYeh Assam ka ek pramukh UNESCO World Heritage Site hai, jo apne ek-sing wale gainde (One-Horned Rhinoceros) ke liye poori duniya mein vikhyaat hai.";
-            } else if (q.includes('portal') || q.includes('exploreasam')) {
-                return "🏛️ **About ExploreAsam Portal:**\nExploreAsam portal Assam Innovation Challenge ke liye banaya gaya hai, jiska mukhya uddeshya Assam ki sanskriti, itihaas, aur virasat ko digital roop mein sanrakshit karna hai.";
+            if (q.includes('history') || q.includes('itihas') || q.includes('ahom') || q.includes('sukkapha')) {
+                return "📜 **Assam History & Ahom Dynasty:**\nAssam ka itihaas bohot samridh hai. 1228 AD mein Swargadeo Sukkapha ne Patkai parvat paar karke Ahom rajya ki neev rakhi thi aur lagbhag 600 saal tak bina kisi external power ke ghulami ke shashan kiya. Iske alawa Pragjyotishpur aur Kamrupa rajya ki pauranik kahaniyan bhi yahan judi hain.";
+            } else if (q.includes('kaziranga') || q.includes('park') || q.includes('rhino')) {
+                return "🐘 **Kaziranga National Park:**\nYeh Assam ka ek pramukh UNESCO World Heritage Site hai, jo apne ek-sing wale gainde (One-Horned Rhinoceros) ke liye poori duniya mein vikhyaat hai. Yahan haathi, baag (tigers) aur kai durlabh prajati ke jeev-jantu paaye jaate hain.";
+            } else if (q.includes('portal') || q.includes('exploreasam') || q.includes('challenge')) {
+                return "🏛️ **About ExploreAsam Portal:**\nExploreAsam portal Assam Innovation Challenge ke liye banaya gaya hai. Iska mukhya uddeshya Assam ki sanskriti, itihaas, paryatan sthal, aur lupt ho rahi virasat ko digital roop mein prastut aur sanrakshit karna hai.";
+            } else if (q.includes('climate') || q.includes('weather')) {
+                return "🌦️ **Climate of Assam:**\nAssam ki jalwayu tropical monsoon type ki hoti hai, jisme bhari varsha, thandi sardi aur suhavne mausam ka anubhav hota hai. Yeh Brahmaputra aur Barak nadiyon ki upajao ghati par sthit hai.";
             } else {
-                return `Aapne pucha hai: "${q}". ExploreAsam portal ke history aur culture modules mein is vishay par vistrit jankari uplabdh hai!`;
+                return `Aapne pucha hai: "<em>${escapeHtml(q)}</em>". ExploreAsam portal ke history, culture, aur districts modules mein is vishay par vistrit aur rochak jankari uplabdh hai! Aap homepage se baki sections bhi check kar sakte hain.`;
             }
         }
 
